@@ -1,6 +1,7 @@
 package lxx.ru.sendtodisk;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -27,6 +28,8 @@ public class SendToActivity extends AppCompatActivity {
         Intent receivedIntent = getIntent();
         //get the action
         String receivedAction = receivedIntent.getAction();
+        // get MIME type
+        String receivedMimeType = receivedIntent.getType();
 
 
         //make sure it's an action and type we can handle
@@ -34,9 +37,18 @@ public class SendToActivity extends AppCompatActivity {
             return;
         }
 
-        String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
-        String infoText = String.format("%s %s (%s)", "Sending", receivedIntent.getType(), sharedText);
-        textSend.setText(infoText);
+        if (receivedMimeType.startsWith("text")) {
+            String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
+            String infoText = String.format("%s %s:\n%s", getString(R.string.sending_str), receivedMimeType, sharedText);
+            textSend.setText(infoText);
+            // TODO upload sharedText
+        }
+        else{
+            Uri streamUri = (Uri) receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+            String infoText = String.format("%s %s\n%s", getString(R.string.sending_str), receivedMimeType, streamUri.toString());
+            textSend.setText(infoText);
+            // TODO upload streamUri
+        }
     }
 
 }
