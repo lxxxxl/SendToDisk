@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class SendToActivity extends AppCompatActivity {
 
@@ -17,19 +19,8 @@ public class SendToActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_to);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-
+        TextView textSend = findViewById(R.id.textSend);
 
 
         //get the received intent
@@ -39,16 +30,13 @@ public class SendToActivity extends AppCompatActivity {
 
 
         //make sure it's an action and type we can handle
-        if(receivedAction.equals(Intent.ACTION_SEND)){
-            //content is being shared
-        }
-        else if(receivedAction.equals(Intent.ACTION_MAIN)){
-            //app has been launched directly, not from share list
+        if(!receivedAction.equals(Intent.ACTION_SEND)){
+            return;
         }
 
-
-        //find out what we are dealing with
-        String receivedType = receivedIntent.getType();
+        String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
+        String infoText = String.format("%s %s (%s)", "Sending", receivedIntent.getType(), sharedText);
+        textSend.setText(infoText);
     }
 
 }
