@@ -1,17 +1,16 @@
 package lxx.ru.sendtodisk;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import com.yandex.disk.rest.Credentials;
+
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import android.view.View;
+import android.provider.MediaStore;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,15 +71,14 @@ public class SendToActivity extends AppCompatActivity {
             Uri streamUri = (Uri) receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
 
             // generate remote filename
-            String remoteFilename = generateRemoteFilename(baseDir);
-            String streamFilename = streamUri.getPath();
-            remoteFilename = remoteFilename.substring(0, remoteFilename.lastIndexOf("/")) +
-                    streamFilename.substring(streamFilename.lastIndexOf("/"), streamFilename.length());
-
-            String infoText = String.format("%s %s\n%s\n%s", getString(R.string.sending_str), receivedMimeType, streamFilename, remoteFilename);
+            String origFilename = streamUri.getPath();
+            if (streamUri.getScheme().equals("content"))
+                origFilename = contentUriToFilename(streamUri);
+            String remoteFilename = generateRemoteFilename(baseDir, origFilename);
+            String infoText = String.format("%s %s\n%s\n%s", getString(R.string.sending_str), receivedMimeType, streamUri.toString(), remoteFilename);
 
             textSend.setText(infoText);
-            yandexDiskHelper.uploadFile(streamFilename, remoteFilename);
+            yandexDiskHelper.uploadFile(origFilename, remoteFilename);
         }
     }
 
@@ -94,13 +92,42 @@ public class SendToActivity extends AppCompatActivity {
 
     }
 
-
      public String generateRemoteFilename(String baseDir){
         String pattern = "/yyyyMMdd/HHmmss";
         DateFormat df = new SimpleDateFormat(pattern);
         Date today = Calendar.getInstance().getTime();
         String todayAsString = df.format(today);
         return baseDir + todayAsString + ".txt";
+    }
+
+    public String generateRemoteFilename(String baseDir, String sourceFilename){
+        String pattern = "/yyyyMMdd";
+        DateFormat df = new SimpleDateFormat(pattern);
+        Date today = Calendar.getInstance().getTime();
+        String todayAsString = df.format(today);
+
+        String filename = sourceFilename.substring(sourceFilename.lastIndexOf("/"), sourceFilename.length());
+
+        return baseDir + todayAsString + filename;
+    }
+
+    public String contentUriToFilename(Uri uri){
+        // https://stackoverflow.com/a/13275282/13040709
+        String path = "";
+        String[] projection = {MediaStore.MediaColumns.DATA};
+
+        ContentResolver cr = getApplicationContext().getContentResolver();
+        Cursor metaCursor = cr.query(uri, projection, null, null, null);
+        if (metaCursor != null) {
+            try {
+                if (metaCursor.moveToFirst()) {
+                    path = metaCursor.getString(0);
+                }
+            } finally {
+                metaCursor.close();
+            }
+        }
+        return path;
     }
 
 }
