@@ -2,4 +2,9 @@
     <string name="app_name">Send To Disk</string>
     <string name="title_activity_send_to">SendToActivity</string>
     <string name="sending_str">Sending</string>
+    <string name="upload_ok">Upload successfull</string>
+    <string name="upload_fail">Upload failure</string>
+    <string name="yadisk_topfolder">/tmp</string>
+    <string name="yadisk_user">test</string>
+    <string name="yadisk_token">test</string>
 </resources>
