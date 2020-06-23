@@ -45,9 +45,6 @@ public class SendToActivity extends AppCompatActivity {
             }
         });
 
-        TextView textSend = findViewById(R.id.textSend);
-
-
         //get the received intent
         Intent receivedIntent = getIntent();
         //get the action
@@ -64,7 +61,6 @@ public class SendToActivity extends AppCompatActivity {
         if (receivedMimeType.startsWith("text")) {
             String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
             String infoText = String.format("%s %s:\n%s", getString(R.string.sending_str), receivedMimeType, sharedText);
-            textSend.setText(infoText);
             // TODO upload sharedText
         }
         else{
@@ -77,7 +73,6 @@ public class SendToActivity extends AppCompatActivity {
             String remoteFilename = generateRemoteFilename(baseDir, origFilename);
             String infoText = String.format("%s %s\n%s\n%s", getString(R.string.sending_str), receivedMimeType, streamUri.toString(), remoteFilename);
 
-            textSend.setText(infoText);
             yandexDiskHelper.uploadFile(origFilename, remoteFilename);
         }
     }
