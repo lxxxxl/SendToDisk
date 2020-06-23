@@ -11,13 +11,13 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.provider.MediaStore;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class SendToActivity extends AppCompatActivity {
 
@@ -60,18 +60,16 @@ public class SendToActivity extends AppCompatActivity {
 
         if (receivedMimeType.startsWith("text")) {
             String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
-            String infoText = String.format("%s %s:\n%s", getString(R.string.sending_str), receivedMimeType, sharedText);
             // TODO upload sharedText
         }
         else{
-            Uri streamUri = (Uri) receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+            Uri streamUri = receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
 
             // generate remote filename
             String origFilename = streamUri.getPath();
             if (streamUri.getScheme().equals("content"))
                 origFilename = contentUriToFilename(streamUri);
             String remoteFilename = generateRemoteFilename(baseDir, origFilename);
-            String infoText = String.format("%s %s\n%s\n%s", getString(R.string.sending_str), receivedMimeType, streamUri.toString(), remoteFilename);
 
             yandexDiskHelper.uploadFile(origFilename, remoteFilename);
         }
@@ -88,20 +86,18 @@ public class SendToActivity extends AppCompatActivity {
     }
 
      public String generateRemoteFilename(String baseDir){
-        String pattern = "/yyyyMMdd/HHmmss";
-        DateFormat df = new SimpleDateFormat(pattern);
+        DateFormat df = new SimpleDateFormat("/yyyyMMdd/HHmmss", Locale.getDefault());
         Date today = Calendar.getInstance().getTime();
         String todayAsString = df.format(today);
         return baseDir + todayAsString + ".txt";
     }
 
     public String generateRemoteFilename(String baseDir, String sourceFilename){
-        String pattern = "/yyyyMMdd";
-        DateFormat df = new SimpleDateFormat(pattern);
+        DateFormat df = new SimpleDateFormat("/yyyyMMdd", Locale.getDefault());
         Date today = Calendar.getInstance().getTime();
         String todayAsString = df.format(today);
 
-        String filename = sourceFilename.substring(sourceFilename.lastIndexOf("/"), sourceFilename.length());
+        String filename = sourceFilename.substring(sourceFilename.lastIndexOf("/"));
 
         return baseDir + todayAsString + filename;
     }
