@@ -72,18 +72,20 @@ public class SendToActivity extends AppCompatActivity {
         if (sharedText != null) {
             // if it is link to something
             if (URLUtil.isHttpUrl(sharedText) || URLUtil.isHttpsUrl(sharedText)){
-                // TODO get filename or MIME type from URL
-                yandexDiskHelper.saveFromUrl(sharedText, generateRemoteFilename(baseDir,"/"));
+                yandexDiskHelper.saveFromUrl(sharedText, generateRemoteFilename(baseDir,sharedText));
             }
-            try {
-                File tempFile = File.createTempFile("prefix", "txt", this.getCacheDir());
-                BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
-                bw.write(sharedText);
-                bw.close();
-                yandexDiskHelper.uploadFile(tempFile, generateRemoteFilename(baseDir));
+            // ... or it is text note
+            else {
+                try {
+                    File tempFile = File.createTempFile("prefix", "txt", this.getCacheDir());
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+                    bw.write(sharedText);
+                    bw.close();
+                    yandexDiskHelper.uploadFile(tempFile, generateRemoteFilename(baseDir));
 
-            } catch (IOException e) {
-                e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         }
@@ -145,5 +147,4 @@ public class SendToActivity extends AppCompatActivity {
         }
         return path;
     }
-
 }

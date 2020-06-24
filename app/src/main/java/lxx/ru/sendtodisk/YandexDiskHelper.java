@@ -7,6 +7,8 @@ import com.yandex.disk.rest.RestClient;
 import com.yandex.disk.rest.json.Link;
 
 import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class YandexDiskHelper {
 
@@ -24,17 +26,25 @@ public class YandexDiskHelper {
 
     }
 
-    public void saveFromUrl(final String url, final String destPath) {
+    public void saveFromUrl(final String url, final String destFilename) {
         new Thread(new Runnable() {
             @Override
             public void run () {
                 boolean success = false;
                 try {
-                    restClient.makeFolder(destPath);
+                    String remotePath = destFilename.substring(0, destFilename.lastIndexOf("/"));
+                    restClient.makeFolder(remotePath);
                 } catch (Exception ex) {
                 }
                 try {
-                    restClient.saveFromUrl(url, destPath);
+                    String destFname = destFilename;
+
+                    if (!destFname.contains(".")){
+                        // if there is no extension, then generate it from MIME Type
+                        destFname += "." + getExtension(url);
+                    }
+
+                    restClient.saveFromUrl(url, destFname);
                     success = true;
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -71,5 +81,24 @@ public class YandexDiskHelper {
                 }
             }
         }).start();
+    }
+
+    public String getExtension(String urlString){
+        // https://stackoverflow.com/a/5802223/13040709
+        String extension = "dat";
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.connect();
+            String contentType = connection.getContentType();
+            String ext = contentType.substring(contentType.lastIndexOf("/")+1);
+            if (!ext.contains("*"))
+                extension = ext;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return extension;
     }
 }
