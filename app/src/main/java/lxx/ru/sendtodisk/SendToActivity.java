@@ -4,12 +4,14 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import com.yandex.disk.rest.Credentials;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
@@ -26,11 +28,16 @@ public class SendToActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_to);
 
+        // get username/token from local storage
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String username = pref.getString("username","");
+        String token = pref.getString("token","");
+
         // get base dir on Yandex Disk
         String baseDir = getString(R.string.yadisk_topfolder);
 
         // init Yandex Disk API helper class
-        Credentials credentials = new Credentials(getString(R.string.yadisk_user),getString(R.string.yadisk_token));
+        Credentials credentials = new Credentials(username,token);
         YandexDiskHelper yandexDiskHelper = new YandexDiskHelper(credentials, new YandexDiskHelper.OnApiCallFinishListener(
 
         ) {
