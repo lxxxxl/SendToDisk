@@ -13,8 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.webkit.URLUtil;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -56,29 +61,42 @@ public class SendToActivity extends AppCompatActivity {
         Intent receivedIntent = getIntent();
         //get the action
         String receivedAction = receivedIntent.getAction();
-        // get MIME type
-        String receivedMimeType = receivedIntent.getType();
-
 
         //make sure it's an action and type we can handle
         if(!receivedAction.equals(Intent.ACTION_SEND)){
             return;
         }
 
-        if (receivedMimeType.startsWith("text")) {
-            String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
-            // TODO upload sharedText
-        }
-        else{
-            Uri streamUri = receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+        // check if text was sent to us
+        String sharedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            // if it is link to something
+            if (URLUtil.isHttpUrl(sharedText) || URLUtil.isHttpsUrl(sharedText)){
+                // TODO get filename or MIME type from URL
+                yandexDiskHelper.saveFromUrl(sharedText, generateRemoteFilename(baseDir,"/"));
+            }
+            try {
+                File tempFile = File.createTempFile("prefix", "txt", this.getCacheDir());
+                BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+                bw.write(sharedText);
+                bw.close();
+                yandexDiskHelper.uploadFile(tempFile, generateRemoteFilename(baseDir));
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        // check if file was sent to us
+        Uri streamUri = receivedIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (streamUri != null){
             // generate remote filename
             String origFilename = streamUri.getPath();
             if (streamUri.getScheme().equals("content"))
                 origFilename = contentUriToFilename(streamUri);
             String remoteFilename = generateRemoteFilename(baseDir, origFilename);
 
-            yandexDiskHelper.uploadFile(origFilename, remoteFilename);
+            yandexDiskHelper.uploadFile(new File(origFilename), remoteFilename);
         }
     }
 

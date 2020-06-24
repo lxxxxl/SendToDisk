@@ -37,6 +37,7 @@ public class YandexDiskHelper {
                     restClient.saveFromUrl(url, destPath);
                     success = true;
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
                 if (onApiCallFinishListener != null){
                     onApiCallFinishListener.onApiCallFinish(success);
@@ -45,7 +46,7 @@ public class YandexDiskHelper {
         }).start();
     }
 
-    public void uploadFile(final String filename, final String destFilename) {
+    public void uploadFile(final File sourceFile, final String destFilename) {
         new Thread(new Runnable() {
             @Override
             public void run () {
@@ -59,9 +60,10 @@ public class YandexDiskHelper {
 
                 try {
                     Link link = restClient.getUploadLink(destFilename, true);
-                    restClient.uploadFile(link, true, new File(filename), null);
+                    restClient.uploadFile(link, true, sourceFile, null);
                     success = true;
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
 
                 if (onApiCallFinishListener != null) {
